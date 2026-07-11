@@ -35,8 +35,10 @@ spec:
           image: 829808296602.dkr.ecr.us-east-1.amazonaws.com/team-platform/flagship-server:placeholder
           ports:
             - containerPort: 8080
-          # Postgres store (ADR-099 D2): DATABASE_URL is the CNPG-generated app connection string
-          # (flagship-db-app Secret, `uri` key — provisioned by postgres.yaml). Absent → in-memory, which is
+          # Postgres store (ADR-099 D2): DATABASE_URL is the CNPG-generated app connection string (flagship-db-app
+          # Secret, `uri` key). The database + that Secret live in the platform-flagship-db namespace (db/); a
+          # platform Kyverno policy clones the Secret into this namespace since secretKeyRef can't cross namespaces.
+          # Absent → in-memory, which is
           # the local-dev/test path (cmd/flagship/main.go selects the store on DATABASE_URL presence).
           env:
             - name: DATABASE_URL

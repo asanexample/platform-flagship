@@ -5,8 +5,10 @@
 # The DATABASE lives in a PLATFORM namespace (db/, namespace platform-flagship-db), NOT this env namespace —
 # CNPG (an operator-managed, API-watching, operator-polled workload) does not fit the tenant sandbox
 # (Kyverno + default-deny-ingress netpol + WFC), whereas a plain platform namespace runs it cleanly like
-# every other platform DB. The app connects cross-namespace (allow-db-egress.yaml + the flagship-db-app
-# secret carrying the FQDN uri).
+# every other platform DB. The app reaches it cross-namespace on two planes: the NETWORK path is
+# allow-db-egress.yaml (egress to the DB namespace on 5432) + the FQDN uri in the secret; the SECRET itself
+# is cloned into this namespace by a platform-owned Kyverno policy (sync-platform-db-secret), since a
+# secretKeyRef can't cross namespaces.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

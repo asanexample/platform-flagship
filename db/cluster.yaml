@@ -1,13 +1,15 @@
 # CNPG Postgres for Flagship's control plane (ADR-099 D2) — the durable flag store.
 #
-# Co-located in the Environment namespace on preprod. This is admitted because a platform-trust Environment
-# (team `platform`) is EXEMPT from the tenant image sandbox (ADR-081 amendment; platform PR #1315): the
-# upstream ghcr.io/cloudnative-pg image would otherwise be rejected by the per-product restrict-images + the
-# environment image floor. Requires the cloudnative-pg operator on the cluster (added to preprod in #1315).
+# Runs in a dedicated PLATFORM namespace (platform-flagship-db), NOT the app's Environment namespace — a
+# database is an operator-managed, API-watching, operator-polled workload that does not belong in the tenant
+# sandbox (it runs cleanly here like backstage-db / keycloak-db / triage-copilot-db). Requires the
+# cloudnative-pg operator on the cluster (added to preprod in platform PR #1315).
 #
 # Single instance for dev (flags are tiny; RPO/HA is a prod-overlay concern — instances: 3 + a scheduled
-# Barman backup). CNPG generates the `flagship-db-app` Secret (connection `uri` for the app user), which the
-# Deployment mounts as DATABASE_URL.
+# Barman backup). CNPG generates the `flagship-db-app` Secret (connection `uri` for the app user) HERE, in the
+# database namespace. Because secretKeyRef can't cross namespaces, a platform-owned Kyverno policy
+# (sync-platform-db-secret) clones that Secret into the app's Environment namespace, synchronized on rotation,
+# where the Deployment mounts it as DATABASE_URL (see the app's k8s/base/deployment.yaml).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
