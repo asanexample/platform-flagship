@@ -8,3 +8,13 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - postgres.yaml
+
+# The schema CNPG loads at DB init (ADR-099 D2). Stable name (no hash suffix) so postgres.yaml's
+# postInitApplicationSQLRefs can reference it; it runs once at init, so a content hash would be noise.
+configMapGenerator:
+  - name: flagship-db-schema
+    files:
+      - db-schema.sql
+generatorOptions:
+  disableNameSuffixHash: true
