@@ -32,6 +32,9 @@ spec:
             key: db-schema.sql
 
   storage:
+    # Immediate binding (gp3-immediate): CNPG 1.29 stalls creating the first pod for an UNBOUND
+    # WaitForFirstConsumer PVC; Immediate provisions the EBS volume on PVC creation so CNPG proceeds.
+    storageClass: gp3-immediate
     size: 1Gi
 
   # Explicit requests+limits (the Environment namespace enforces them). A CPU request matters: rsa keygen /
